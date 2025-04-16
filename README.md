@@ -89,3 +89,41 @@ vault write auth/app-test/role/app-test-role bound_service_account_names=app-tes
 root@vault-1:~# vault write auth/app-test/role/app-test-role bound_service_account_names=app-test bound_service_account_namespaces=app-test policies=app-test-policy ttl=24h
 Success! Data written to: auth/app-test/role/app-test-role
 ```
+### Test Deployment
+**Put secret test**
+```
+root@vault-1:~# vault kv put secret/app-test/app-test DB_USER="username" DB_PASSWORD="password" DB_NAME="test-vault-db" MSG="This is secret get from vault."
+======== Secret Path ========
+secret/data/app-test/app-test
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       2025-04-16T09:55:13.927426817Z
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+```
+**Schedule application and mount service account similar info Kubernetes authentication role**
+```
+# kubectl apply -f ./k8s-deployment/deployment.yaml
+
+# kubectl get all -n app-test -o wide
+NAME                                         READY   STATUS    RESTARTS   AGE   IP             NODE           NOMINATED NODE   READINESS GATES
+pod/test-vault-changepath-78b8f6599b-df54k   2/2     Running   0          47s   10.42.69.239   k8s-worker02   <none>           <none>
+
+NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS              IMAGES   SELECTOR
+deployment.apps/test-vault-changepath   1/1     1            1           47s   test-vault-changepath   nginx    app=test-vault-changepath
+
+NAME                                               DESIRED   CURRENT   READY   AGE   CONTAINERS              IMAGES   SELECTOR
+replicaset.apps/test-vault-changepath-78b8f6599b   1         1         1       47s   test-vault-changepath   nginx    app=test-vault-changepath,pod-template-hash=78b8f6599b
+
+
+# kubectl exec -it pod/test-vault-changepath-78b8f6599b-df54k -n app-test  -- cat /vault/secrets/config.py
+Defaulted container "test-vault-changepath" out of: test-vault-changepath, vault-agent, vault-agent-init (init)
+DB_USERNAME="test-vault-db"
+DB_PASSWORD="password"
+DB_NAME="test-vault-db"
+MSG="This is secret get from vault."
+```

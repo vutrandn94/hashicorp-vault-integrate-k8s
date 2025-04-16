@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: test-vault-changepath
+  name: test-vault-changepath
+  namespace: app-test
+  annotations:
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-vault-changepath
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: test-vault-changepath
+      annotations:
+        vault.hashicorp.com/auth-path: 'auth/app-test'
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/role: 'app-test-role'
+        vault.hashicorp.com/agent-inject-template-config.py: |
+          {{- with secret "secret/data/app-test/app-test" -}}
+          DB_USERNAME="{{ .Data.data.DB_NAME }}"
+          DB_PASSWORD="{{ .Data.data.DB_PASSWORD }}"
+          DB_NAME="{{ .Data.data.DB_NAME }}"
+          MSG="{{ .Data.data.MSG }}"
+          {{- end }}
+    spec:
+      serviceAccountName: app-test
+      imagePullSecrets:
+      - name: registry-cred
+      containers:
+      - image: nginx
+        name: test-vault-changepath
+        resources: {}
+      hostAliases:
+      - ip: "172.31.42.183"
+        hostnames:
+          - "vault-1.vault.local"
+status: {}
