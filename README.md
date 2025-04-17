@@ -118,8 +118,9 @@ deployment.apps/test-vault-changepath   1/1     1            1           47s   t
 
 NAME                                               DESIRED   CURRENT   READY   AGE   CONTAINERS              IMAGES   SELECTOR
 replicaset.apps/test-vault-changepath-78b8f6599b   1         1         1       47s   test-vault-changepath   nginx    app=test-vault-changepath,pod-template-hash=78b8f6599b
-
-
+```
+**Verify secret mounted to Pod**
+```
 # kubectl exec -it pod/test-vault-changepath-78b8f6599b-df54k -n app-test  -- cat /vault/secrets/config.py
 Defaulted container "test-vault-changepath" out of: test-vault-changepath, vault-agent, vault-agent-init (init)
 DB_USERNAME="test-vault-db"
