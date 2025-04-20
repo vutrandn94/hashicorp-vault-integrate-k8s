@@ -25,7 +25,7 @@ Success! Enabled kubernetes auth method at: app-test/
 ```
 # kubectl create ns vault-injector
 
-# helm install vault hashicorp/vault --namespace vault-injector\
+# helm install vault hashicorp/vault --namespace vault-injector \
     --set "global.externalVaultAddr=http://vault-1.vault.local:8200"
 
 NAME: vault
@@ -71,7 +71,7 @@ Success! Data written to: auth/app-test/config
 ```
 
 ### Create a Kubernetes authentication role
-**Create Namespace & Service Account bound with Role
+**Create Namespace & Service Account bound with Role**
 ```
 # kubectl create ns app-test
 
